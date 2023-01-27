@@ -55,6 +55,24 @@ static uint32_t elf_get_symval(Elf32_Ehdr* hdr, Elf32_Sym* symbol)
 	}
 }
 
+
+
+static uint32_t elf_get_symval(Elf32_Ehdr* hdr, Elf32_Sym* symbol)
+{
+	if (swap_endian(symbol->st_shndx) == SHN_UNDEF)
+	{
+		cerr << "Value of external symbol requested." << endl;
+		return 0;
+	}
+	else if (swap_endian(symbol->st_shndx) == SHN_ABS)
+		return swap_endian(symbol->st_value);
+	else
+	{
+		Elf32_Shdr* target = elf_section(hdr, swap_endian(symbol->st_shndx));
+		return swap_endian(symbol->st_value) + swap_endian(target->sh_offset);
+	}
+}
+
 static uint32_t elf_get_symval(Elf32_Ehdr* hdr, int table, uint idx)
 {
 	if (table == SHN_UNDEF || idx == SHN_UNDEF)
